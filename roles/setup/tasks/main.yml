@@ -11,7 +11,7 @@
 - name: "Copy nodejs file"
   become: yes
   copy:
-    src: ../files/*
+    src: ../../*
     dest: /tmp/
 
 - name: "Install docker"

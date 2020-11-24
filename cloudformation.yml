@@ -6,7 +6,7 @@ Parameters:
 
  EC2ImageID:
   Type: String
-  Default: ami-06e54d05255faf8f6
+  Default: ami-0502e817a62226e03
   Description: Ec2 launch Image ID 
 
  VPCCIDR:
@@ -73,7 +73,7 @@ Resources:
     
     ImageId: !Ref EC2ImageID
     InstanceType: !Ref Ec2TypeID
-    KeyName: EC2
+    KeyName: udacity
     NetworkInterfaces: 
       - AssociatePublicIpAddress: "true"
         DeviceIndex: "0"
