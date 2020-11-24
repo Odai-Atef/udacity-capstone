@@ -1,0 +1,75 @@
+pipeline {
+    agent {
+         docker {
+             image 'amazon/aws-cli'
+        }
+    }
+    environment {
+        AWS_ACCESS_KEY_ID="AKIAXFSHHUFHMRBLY4K5"
+        AWS_SECRET_ACCESS_KEY="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"
+        AWS_DEFAULT_REGION="eu-central-1"
+    }
+    stages {
+         stage('update_code') {
+             steps {
+                 dir("udacity-capstone"){
+                     sh "ls -al"
+                     sh "git config --global user.email 'o.3odai@gmail.com'"
+                     sh "git config --global user.name 'odai-atef'"
+                     sh "git stash && git pull"
+                     sh "npm i"
+                 }
+             }
+         }
+         stage('configure'){
+             steps {
+                 dir("udacity-capstone"){
+                     sh "echo 'API_URL=http://18.193.223.63:3030' > .env"
+                 }
+             }
+         }
+         stage('build'){
+             steps{
+                 dir("udacity-capstone"){
+                     sh "npm run build"
+                 }
+             }
+            
+         }
+         stage("Test"){
+             steps{
+                 dir("udacity-capstone"){
+                     sh "npm run test"
+                 }
+             }
+            
+         }
+        stage("create-infrastructure"){
+           
+            steps{
+                dir("udacity-capstone"){
+                    sh "aws --version"
+                    sh "aws configure set aws_secret_access_key  $AWS_SECRET_ACCESS_KEY"
+                    sh "aws configure set region  $AWS_DEFAULT_REGION"
+                    sh "aws configure  get aws_secret_access_key"
+                    sh "aws cloudformation create-stack --stack-name udacity-capstone --template-body file://cloudformation.yml --capabilities CAPABILITY_NAMED_IAM"
+                    
+                }
+            }
+        }
+        stage("deploy"){
+            agent{
+                docker{
+                    image "python:3.7-alpine3.11"
+                }
+            }
+            steps{
+                sh 'curl -H "token: 0cd52177-868d-4982-ac51-f1e6b661064a" --request GET https://api.memstash.io/values/inventory > ./inventory.txt'
+                sh "export ANSIBLE_HOST_KEY_CHECKING=False"
+                sh "export ANSIBLE_HOST_KEY_CHECKING=False && ansible-playbook  -i inventory.txt playbook.yml"
+                
+            }
+        }
+        
+    }
+}

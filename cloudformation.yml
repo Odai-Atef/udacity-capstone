@@ -1,0 +1,83 @@
+Parameters: 
+ Ec2TypeID:
+  Type: String
+  Default: t2.micro
+  Description: Type of image
+
+ EC2ImageID:
+  Type: String
+  Default: ami-06e54d05255faf8f6
+  Description: Ec2 launch Image ID 
+
+ VPCCIDR:
+  Description: VPC IP range CIDR
+  Type: String
+  Default: 10.192.0.0/16
+
+ PrivateSubnetICIDR:
+  Description: IP range CIDR for first private subnet
+  Type: String
+  Default: 10.192.20.0/24
+
+Resources:
+  VPC:
+   Type: AWS::EC2::VPC
+   Properties:
+    CidrBlock: !Ref VPCCIDR
+    EnableDnsSupport: true
+    EnableDnsHostnames: true
+  PrivateSubnetI:
+   Type: AWS::EC2::Subnet
+   Properties:
+    VpcId: !Ref VPC
+    AvailabilityZone: !Select [ 0, !GetAZs  '' ]
+    MapPublicIpOnLaunch: false
+    CidrBlock: !Ref PrivateSubnetICIDR
+
+  EC2SecurityGroup:
+   Type: AWS::EC2::SecurityGroup
+   Properties:
+    VpcId: !Ref VPC
+    GroupDescription: Security Group for instances
+    SecurityGroupEgress: 
+     - CidrIp: 0.0.0.0/0
+       IpProtocol: tcp
+       ToPort: 3000
+       FromPort: 3000
+       Description: Web Access
+
+
+     - CidrIp: 0.0.0.0/0
+       IpProtocol: tcp
+       ToPort: 22
+       FromPort: 22
+       Description: SSH access
+
+
+    SecurityGroupIngress:
+     - CidrIp: 0.0.0.0/0
+       IpProtocol: tcp
+       FromPort: 3000
+       ToPort: 3000
+       Description: Web Access
+
+     - CidrIp: 0.0.0.0/0
+       IpProtocol: tcp
+       FromPort: 22
+       ToPort: 22
+       Description: SSH access
+
+  Ec2InstanceI:
+   Type: AWS::EC2::Instance
+   Properties:
+    
+    ImageId: !Ref EC2ImageID
+    InstanceType: !Ref Ec2TypeID
+    KeyName: EC2
+    NetworkInterfaces: 
+      - AssociatePublicIpAddress: "true"
+        DeviceIndex: "0"
+        GroupSet:
+         - Ref: EC2SecurityGroup
+        SubnetId:
+           Ref: PrivateSubnetI
