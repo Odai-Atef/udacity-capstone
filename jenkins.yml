@@ -14,7 +14,6 @@ pipeline {
             }
              steps {
                  dir("udacity-capstone"){
-                     
                      sh "ls -al"
                      sh "git config --global user.email 'o.3odai@gmail.com'"
                      sh "git config --global user.name 'odai-atef'"
@@ -40,6 +39,8 @@ pipeline {
              steps{
                  dir("udacity-capstone"){
                      sh "npm run build"
+                     sh "docker build . --tag  odaiatef/udacitycap"
+                     sh "docker push odaiatef/udacitycap"
                  }
              }
             

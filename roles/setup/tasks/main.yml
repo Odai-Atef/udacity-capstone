@@ -8,20 +8,15 @@
   apt:
     upgrade: yes
 
-- name: "Copy nodejs file"
-  become: yes
-  copy:
-    src: ../../*
-    dest: /tmp/
 
-- name: "Install docker"
+- name: "Install kubernetes cluster"
   shell: |
-	sudo apt-get install docker-ce docker-ce-cli containerd.io
+    sudo apt-get update && sudo apt-get install -y apt-transport-https gnupg2 curl
+    curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+    echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
+    sudo apt-get update
+    sudo apt-get install -y kubectl
 
-- name: "build docker"
+- name: "Deploy docker image"
   shell: |
-    sudo docker build . --tag udacitycap
-
-- name: "Run docker"
-  shell: |
-    sudo docker run  -p 3000:3000 udacitycap
+    sudo kubectl run udacity-capstone --image=odaiatef/udacitycap:latest --port=3000
