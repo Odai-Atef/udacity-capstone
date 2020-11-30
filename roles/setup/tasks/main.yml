@@ -20,3 +20,20 @@
 - name: "Deploy docker image"
   shell: |
     sudo kubectl run udacity-capstone --image=odaiatef/udacitycap:latest --port=3000
+    sudo kubectl expose pod udacity-capstone --port=3000 
+    sudo kubectl create deployment udacitycap --image=odaiatef/udacitycap
+    sudo kubectl set image deployments/udacitycap udacitycap=odaiatef/udacitycap:latest
+    sudo kubectl rollout status deployments/udacitycap
+
+- name: "Rollout"
+  shell: | 
+    sudo kubectl rollout undo deployments/udacitycap
+  when:  |
+    URL="http://127.0.0.1:3000/"
+              if curl -s --head ${URL}
+              then
+               return 0
+              else
+               return 1
+              fi
+
